@@ -23,18 +23,19 @@ export default function Canvas({
       <div
         onClick={addCard}
         style={{
-          transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.zoom})`,
+          // World layer transform.
+          // Viewport stays fixed.
+          // Only rendered card positions move.
+          transform: `scale(${camera.zoom})`,
           transformOrigin: "0 0",
 
-          // Large world-space plane
-            width: "100000px",
-            height: "100000px",
+          border: "2px solid red",
+          boxSizing: "border-box",
 
-            // Center world around origin
-            left: "-50000px",
-            top: "-50000px",
-
-            position: "absolute",
+          width: "100%",
+          height: "100%",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
         {children}

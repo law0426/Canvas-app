@@ -1,5 +1,6 @@
 export default function Card({
   card,
+  camera,
   startDrag,
   updateText,
 }) {
@@ -13,8 +14,9 @@ export default function Card({
       }
       style={{
         position: "absolute",
-        left: card.x,
-        top: card.y,
+        // Render world-space card position relative to camera
+        left: card.x + camera.x,
+        top: card.y + camera.y,
 
         minWidth: 120,
         minHeight: 60,

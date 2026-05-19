@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import {
   screenToWorld,
-  screenToWorldOffset,
   eventToWorld
 } from "./utils/coordinates";
 import Card from "./components/Card";
 import Canvas from "./components/Canvas";
+
 
 export default function App() {
 
@@ -360,6 +360,33 @@ export default function App() {
     - transformed by camera
   */
 
+  function resetCamera() {
+    setCamera({
+      x: 0,
+      y: 0,
+      zoom: 1,
+    });
+  }
+
+  useEffect(() => {
+  function handleKeyDown(e) {
+
+    // Ignore typing inside editable cards
+    if (e.target.isContentEditable) return;
+
+    if (e.code === "Space") {
+      e.preventDefault();
+      resetCamera();
+    }
+  }
+
+  window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   return (
     <Canvas
       camera={camera}
@@ -373,6 +400,7 @@ export default function App() {
         <Card
           key={card.id}
           card={card}
+          camera={camera}
           startDrag={startDrag}
           updateText={updateText}
         />
