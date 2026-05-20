@@ -1,6 +1,5 @@
 export default function Canvas({
   children,
-  camera,
   onMove,
   stopAll,
   startPan,
@@ -26,8 +25,6 @@ export default function Canvas({
           // World layer transform.
           // Viewport stays fixed.
           // Only rendered card positions move.
-          transform: `scale(${camera.zoom})`,
-          transformOrigin: "0 0",
 
           border: "2px solid red",
           boxSizing: "border-box",
