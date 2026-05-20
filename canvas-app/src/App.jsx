@@ -4,6 +4,8 @@ import {
   eventToWorld
 } from "./utils/coordinates";
 import Card from "./components/Card";
+import CardFace from "./components/CardFace";
+import CardBack from "./components/CardBack";
 import Canvas from "./components/Canvas";
 import WorldLayer from "./components/WorldLayer";
 
@@ -197,8 +199,8 @@ export default function App() {
                   So we convert screen -> world coordinates
                   using camera transform math.
                 */
-                x: mouse.x - offset.current.x,
-                y: mouse.y - offset.current.y,
+                x: mouse.x - offset.current.x / camera.zoom,
+                y: mouse.y - offset.current.y / camera.zoom,
               }
             : c
         )
@@ -275,12 +277,12 @@ export default function App() {
   const mouseY = e.clientY;
 
   // Convert mouse position into world coordinates BEFORE zoom
-  const worldX = (mouseX - camera.x) / camera.zoom;
-  const worldY = (mouseY - camera.y) / camera.zoom;
+  const worldX = mouseX / camera.zoom - camera.x;
+  const worldY = mouseY / camera.zoom - camera.y;
 
   // Recalculate camera position so cursor stays anchored
-  const newCameraX = mouseX - worldX * clampedZoom;
-  const newCameraY = mouseY - worldY * clampedZoom;
+  const newCameraX = mouseX / clampedZoom - worldX;
+  const newCameraY = mouseY / clampedZoom - worldY;
 
   setCamera({
     x: newCameraX,

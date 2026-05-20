@@ -1,9 +1,12 @@
+import { useState } from "react";
+
 export default function Card({
   card,
   camera,
   startDrag,
   updateText,
 }) {
+  const [flipped, setFlipped] = useState(false);
   return (
     <div
       onMouseDown={(e) => startDrag(e, card)}
