@@ -5,6 +5,7 @@ import {
 } from "./utils/coordinates";
 import Card from "./components/Card";
 import Canvas from "./components/Canvas";
+import WorldLayer from "./components/WorldLayer";
 
 
 export default function App() {
@@ -396,15 +397,17 @@ export default function App() {
       onWheel={onWheel}
       addCard={addCard}
     >
-      {cards.map((card) => (
-        <Card
-          key={card.id}
-          card={card}
-          camera={camera}
-          startDrag={startDrag}
-          updateText={updateText}
-        />
-      ))}
+      <WorldLayer camera={camera}>
+        {cards.map((card) => (
+          <Card
+            key={card.id}
+            card={card}
+            camera={camera}
+            startDrag={startDrag}
+            updateText={updateText}
+          />
+        ))}
+      </WorldLayer>
     </Canvas>
   );
 }

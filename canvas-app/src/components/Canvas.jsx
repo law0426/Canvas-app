@@ -17,18 +17,13 @@ export default function Canvas({
         height: "100vh",
         background: "#111",
         overflow: "hidden",
+        border: "2px solid cyan",
+        boxSizing: "border-box",
       }}
     >
       <div
         onClick={addCard}
         style={{
-          // World layer transform.
-          // Viewport stays fixed.
-          // Only rendered card positions move.
-
-          border: "2px solid red",
-          boxSizing: "border-box",
-
           width: "100%",
           height: "100%",
           position: "relative",

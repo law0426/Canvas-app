@@ -1,39 +1,41 @@
 export default function WorldLayer({
   children,
   camera,
-  addCard,
 }) {
   return (
     <div
-      onClick={addCard}
       style={{
+        pointerEvents: "none",
         /*
-          Temporary behavior-preserving transform.
+          World transform layer.
 
-          Zoom still happens here for now.
+          This owns:
+          - zoom
+          - later: pan transforms
+          - later: spatial/world transforms
 
-          Later:
-          - camera logic
-          - projection math
-          - render equations
-
-          will be cleaned up incrementally.
+          NOT:
+          - browser interaction
+          - clipping
         */
         transform: `scale(${camera.zoom})`,
         transformOrigin: "0 0",
 
         /*
-          World layer fills viewport,
-          but is NOT the viewport itself.
+          Important:
+          relative positioning allows
+          absolutely-positioned cards
+          to anchor correctly.
         */
-        width: "100%",
-        height: "100%",
         position: "relative",
 
         /*
-          Temporary debug border.
-          Remove later.
+          World layer should NOT clip cards.
         */
+        overflow: "visible",
+
+        width: "100%",
+        height: "100%",
         border: "2px solid red",
         boxSizing: "border-box",
       }}
