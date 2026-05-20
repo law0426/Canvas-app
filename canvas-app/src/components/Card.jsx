@@ -6,7 +6,9 @@ export default function Card({
   startDrag,
   updateText,
 }) {
-  const [flipped, setFlipped] = useState(false);
+
+  const [flipped, setFlipped] = useState(true);
+
   return (
     <div
       onMouseDown={(e) => startDrag(e, card)}

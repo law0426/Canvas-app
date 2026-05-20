@@ -328,22 +328,24 @@ export default function App() {
     Why target check:
     - prevents creating cards when clicking existing cards
   */
-  function addCard(e) {
-    if (e.target !== e.currentTarget) return;
+function addCard(e) {
+  if (e.target !== e.currentTarget) return;
 
-    // Convert click position into world-space
-    const mouse = eventToWorld(e, camera);
+  // Convert click position into world-space
+  const world = eventToWorld(e, camera);
 
-    setCards((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        x: mouse.x,
-        y: mouse.y,
-        text: "New card",
-      },
-    ]);
-  }
+  setCards((prev) => [
+    ...prev,
+    {
+      id: Date.now(),
+      x: world.x,
+      y: world.y,
+      text: "New card",
+
+      tagIds: ["philosophy"],
+    },
+  ]);
+}
 
 
 
