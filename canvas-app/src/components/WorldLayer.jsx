@@ -18,7 +18,10 @@ export default function WorldLayer({
           - browser interaction
           - clipping
         */
-        transform: `scale(${camera.zoom})`,
+        transform: `
+          translate(${camera.x}px, ${camera.y}px)
+          scale(${camera.zoom})
+        `,
         transformOrigin: "0 0",
 
         /*

@@ -263,7 +263,7 @@ export default function App() {
   function onWheel(e) {
   //e.preventDefault();
 
-  const zoomFactor = 1.1;
+  const zoomFactor = 1.2;
 
   const newZoom =
     e.deltaY < 0
@@ -277,12 +277,12 @@ export default function App() {
   const mouseY = e.clientY;
 
   // Convert mouse position into world coordinates BEFORE zoom
-  const worldX = mouseX / camera.zoom - camera.x;
-  const worldY = mouseY / camera.zoom - camera.y;
+  const worldX = (mouseX - camera.x) / camera.zoom;
+  const worldY = (mouseY - camera.y) / camera.zoom;
 
   // Recalculate camera position so cursor stays anchored
-  const newCameraX = mouseX / clampedZoom - worldX;
-  const newCameraY = mouseY / clampedZoom - worldY;
+  const newCameraX = mouseX - worldX * clampedZoom;
+  const newCameraY = mouseY - worldY * clampedZoom;
 
   setCamera({
     x: newCameraX,

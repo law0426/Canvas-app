@@ -20,8 +20,9 @@ export default function Card({
 
         position: "absolute",
         // Render world-space card position relative to camera
-        left: card.x + camera.x,
-        top: card.y + camera.y,
+        left: card.x,
+        top: card.y,
+        transform: "translate(-50%, -50%)",
 
         minWidth: 120,
         minHeight: 60,
