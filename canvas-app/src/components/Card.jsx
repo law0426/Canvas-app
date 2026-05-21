@@ -1,4 +1,6 @@
 import { useState } from "react";
+import CardFace from "./CardFace";
+import CardBack from "./CardBack";
 
 export default function Card({
   card,
@@ -12,12 +14,10 @@ export default function Card({
   return (
     <div
       onMouseDown={(e) => startDrag(e, card)}
-      contentEditable
-      suppressContentEditableWarning
-      onBlur={(e) =>
-        updateText(card.id, e.currentTarget.textContent)
-      }
+      
       style={{
+        pointerEvents: "auto",
+
         position: "absolute",
         // Render world-space card position relative to camera
         left: card.x + camera.x,
@@ -31,7 +31,14 @@ export default function Card({
         cursor: "move",
       }}
     >
-      {card.text}
+      {flipped ? (
+        <CardBack card={card} />
+      ) : (
+        <CardFace
+          card={card}
+          updateText={updateText}
+        />
+      )}
     </div>
   );
 }

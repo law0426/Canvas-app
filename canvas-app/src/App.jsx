@@ -199,8 +199,8 @@ export default function App() {
                   So we convert screen -> world coordinates
                   using camera transform math.
                 */
-                x: mouse.x - offset.current.x / camera.zoom,
-                y: mouse.y - offset.current.y / camera.zoom,
+                x: mouse.x - offset.current.x,
+                y: mouse.y - offset.current.y,
               }
             : c
         )
@@ -342,7 +342,12 @@ function addCard(e) {
       y: world.y,
       text: "New card",
 
-      tagIds: ["philosophy"],
+      tagIds: [
+        "philosophy",
+        "ai",
+        "science",
+        "art",
+      ],
     },
   ]);
 }
@@ -386,9 +391,11 @@ function addCard(e) {
   }
 
   window.addEventListener("keydown", handleKeyDown);
+  window.addEventListener("mouseup", stopAll);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("mouseup", stopAll);
     };
   }, []);
 

@@ -24,4 +24,16 @@ export const tags = {
     color: "#00ccff",
     cards: [],
   },
+
+  science: {
+    id: "science",
+    color: "#00ff88",
+    cards: [],
+  },
+
+  art: {
+    id: "art",
+    color: "#ff66cc",
+    cards: [],
+  },
 };

@@ -10,8 +10,10 @@ export default function Canvas({
     <div
       onMouseMove={onMove}
       onMouseUp={stopAll}
+      onMouseLeave={stopAll}
       onMouseDown={startPan}
       onWheel={onWheel}
+      
       style={{
         width: "100vw",
         height: "100vh",
