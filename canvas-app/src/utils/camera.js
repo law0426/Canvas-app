@@ -33,7 +33,8 @@ export function useCamera() {
   /*
     Zoom camera toward cursor.
   */
-  function onWheel(e) {
+ //TODO: Rename to zoom.
+  function zoom(e) {
 
     const zoomFactor = 1.2;
 
@@ -80,7 +81,7 @@ export function useCamera() {
     camera,
     setCamera,
 
-    onWheel,
+    zoom,
     resetCamera,
   };
 }

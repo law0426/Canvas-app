@@ -7,6 +7,9 @@ import Card from "./components/Card";
 import CardFace from "./components/CardFace";
 import CardBack from "./components/CardBack";
 import Canvas from "./components/Canvas";
+import {
+  useCamera
+} from "./utils/camera"
 import WorldLayer from "./components/WorldLayer";
 
 
@@ -55,11 +58,17 @@ export default function App() {
     This is NOT changing the card positions themselves.
     It only changes how the world is viewed.
   */
-  const [camera, setCamera] = useState({
-    x: 0,
-    y: 0,
-    zoom: 1,
-  });
+  // const [camera, setCamera] = useState({
+  //   x: 0,
+  //   y: 0,
+  //   zoom: 1,
+  // });
+  const {
+    camera,
+    setCamera,
+    zoom,
+    resetCamera,
+  } = useCamera();
 
 
   /*
@@ -262,33 +271,35 @@ export default function App() {
   */
   function onWheel(e) {
   //e.preventDefault();
+    zoom();
 
-  const zoomFactor = 1.2;
+  // //This part is now taken care of in camera.js
+  // const zoomFactor = 1.2;
 
-  const newZoom =
-    e.deltaY < 0
-      ? camera.zoom * zoomFactor
-      : camera.zoom / zoomFactor;
+  // const newZoom =
+  //   e.deltaY < 0
+  //     ? camera.zoom * zoomFactor
+  //     : camera.zoom / zoomFactor;
 
-  const clampedZoom = Math.min(3, Math.max(0.2, newZoom));
+  // const clampedZoom = Math.min(3, Math.max(0.2, newZoom));
 
-  // Mouse position relative to viewport
-  const mouseX = e.clientX;
-  const mouseY = e.clientY;
+  // // Mouse position relative to viewport
+  // const mouseX = e.clientX;
+  // const mouseY = e.clientY;
 
-  // Convert mouse position into world coordinates BEFORE zoom
-  const worldX = (mouseX - camera.x) / camera.zoom;
-  const worldY = (mouseY - camera.y) / camera.zoom;
+  // // Convert mouse position into world coordinates BEFORE zoom
+  // const worldX = (mouseX - camera.x) / camera.zoom;
+  // const worldY = (mouseY - camera.y) / camera.zoom;
 
-  // Recalculate camera position so cursor stays anchored
-  const newCameraX = mouseX - worldX * clampedZoom;
-  const newCameraY = mouseY - worldY * clampedZoom;
+  // // Recalculate camera position so cursor stays anchored
+  // const newCameraX = mouseX - worldX * clampedZoom;
+  // const newCameraY = mouseY - worldY * clampedZoom;
 
-  setCamera({
-    x: newCameraX,
-    y: newCameraY,
-    zoom: clampedZoom,
-  });
+  // setCamera({
+  //   x: newCameraX,
+  //   y: newCameraY,
+  //   zoom: clampedZoom,
+  // });
 }
 
 
@@ -370,20 +381,22 @@ function addCard(e) {
     - transformed by camera
   */
 
-  function resetCamera() {
-    setCamera({
-      x: 0,
-      y: 0,
-      zoom: 1,
-    });
-  }
+    //REPLACE WITH camera.resetCamera();
+  // function resetCamera() {
+  //   setCamera({
+  //     x: 0,
+  //     y: 0,
+  //     zoom: 1,
+  //   });
+  // }
 
+  
   useEffect(() => {
   function handleKeyDown(e) {
 
     // Ignore typing inside editable cards
     if (e.target.isContentEditable) return;
-
+    //Call reset camera
     if (e.code === "Space") {
       e.preventDefault();
       resetCamera();
@@ -392,7 +405,7 @@ function addCard(e) {
 
   window.addEventListener("keydown", handleKeyDown);
   window.addEventListener("mouseup", stopAll);
-
+  //if returning, do this?
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("mouseup", stopAll);
@@ -405,7 +418,7 @@ function addCard(e) {
       onMove={onMove}
       stopAll={stopAll}
       startPan={startPan}
-      onWheel={onWheel}
+      onWheel={zoom}
       addCard={addCard}
     >
       <WorldLayer camera={camera}>
