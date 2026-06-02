@@ -15,20 +15,7 @@ import WorldLayer from "./components/WorldLayer";
 
 export default function App() {
 
-  /*
-    cards:
-    Stores every card on the canvas.
 
-    Each card has:
-    - id      -> unique identifier
-    - x, y    -> world position on canvas
-    - text    -> editable content
-
-    useState causes React to re-render whenever cards change.
-  */
-  const [cards, setCards] = useState([
-    { id: 1, x: 100, y: 100, text: "Edit me" },
-  ]);
 
 
 
@@ -127,21 +114,21 @@ export default function App() {
     Why stopPropagation():
     - prevents card dragging from also triggering canvas panning
   */
-  function startDrag(e, card) {
-    if (e.button !== 0) return;
+  // function startDrag(e, card) {
+  //   if (e.button !== 0) return;
 
-    setDraggingId(card.id);
+  //   setDraggingId(card.id);
 
-    // Convert cursor from screen-space into world-space
-    const mouse = eventToWorld(e, camera);
+  //   // Convert cursor from screen-space into world-space
+  //   const mouse = eventToWorld(e, camera);
 
-    offset.current = {
-      x: mouse.x - card.x,
-      y: mouse.y - card.y,
-    };
+  //   offset.current = {
+  //     x: mouse.x - card.x,
+  //     y: mouse.y - card.y,
+  //   };
 
-    e.stopPropagation();
-  }
+  //   e.stopPropagation();
+  // }
 
 
   /*
@@ -302,6 +289,9 @@ export default function App() {
   // });
 }
 
+function addCard(e){
+  card.addCard(e);
+}
 
   /*
     updateText()
@@ -323,45 +313,6 @@ export default function App() {
   }
 
 
-  /*
-    addCard()
-
-    Called when:
-    - clicking empty canvas space
-
-    Purpose:
-    - create a new card
-
-    Why convert coordinates:
-    - click position is screen-space
-    - cards exist in world-space
-
-    Why target check:
-    - prevents creating cards when clicking existing cards
-  */
-function addCard(e) {
-  if (e.target !== e.currentTarget) return;
-
-  // Convert click position into world-space
-  const world = eventToWorld(e, camera);
-
-  setCards((prev) => [
-    ...prev,
-    {
-      id: Date.now(),
-      x: world.x,
-      y: world.y,
-      text: "New card",
-
-      tagIds: [
-        "philosophy",
-        "ai",
-        "science",
-        "art",
-      ],
-    },
-  ]);
-}
 
 
 
@@ -422,12 +373,12 @@ function addCard(e) {
       addCard={addCard}
     >
       <WorldLayer camera={camera}>
-        {cards.map((card) => (
+        {card.cards.map((card) => (
           <Card
             key={card.id}
             card={card}
             camera={camera}
-            startDrag={startDrag}
+            startDrag={card.startDrag}
             updateText={updateText}
           />
         ))}
