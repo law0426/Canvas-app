@@ -18,6 +18,8 @@ const [cards, setCards] = useState([
 
 */
 
+
+
 export default function Card({
   card,
   //cards,
@@ -26,7 +28,9 @@ export default function Card({
   offset,
   eventToWorld,
   updateText,
+  addCard
 }) {
+
 
 
   const [flipped, setFlipped] = useState(true);
@@ -41,9 +45,8 @@ export default function Card({
 
     useState causes React to re-render whenever cards change.
   */
-  const [cards, setCards] = useState([
-    { id: 1, x: 100, y: 100, text: "Edit me" },
-  ]);
+  
+  
 
   function startDrag(e) {
     if (e.button !== 0) return;

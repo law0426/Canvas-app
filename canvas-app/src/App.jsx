@@ -15,7 +15,9 @@ import WorldLayer from "./components/WorldLayer";
 
 export default function App() {
 
-
+const [cards, setCards] = useState([
+    { id: 1, x: 100, y: 100, text: "Edit me" },
+  ]);
 
 
 
@@ -289,8 +291,9 @@ export default function App() {
   // });
 }
 
-function addCard(e){
-  card.addCard(e);
+function addCardLocal(e){
+  addCard(e); //TODO Why isn't Card.addCard able to be called?
+  console.log("Call addCard");
 }
 
   /*
@@ -370,10 +373,10 @@ function addCard(e){
       stopAll={stopAll}
       startPan={startPan}
       onWheel={zoom}
-      addCard={addCard}
+      addCard={addCardLocal}
     >
       <WorldLayer camera={camera}>
-        {card.cards.map((card) => (
+        {cards.map((card) => (
           <Card
             key={card.id}
             card={card}
