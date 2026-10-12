@@ -13,30 +13,61 @@ export default function Canvas({
   setActiveCardId
 }) {
 
-  // Remembers whether this mouse press began on empty canvas.
-  // useRef preserves the value between events without re-rendering.
-  const pressStartedOnEmptyCanvas = useRef(false);
+  const canvasGesture = useRef(null);
 
   function handleCanvasMouseDown(e) {
-    pressStartedOnEmptyCanvas.current =
-      e.target === e.currentTarget;
+    canvasGesture.current = {
+      startedOnEmptyCanvas:
+        e.button === 0 && e.target === e.currentTarget,
+      startX: e.clientX,
+      startY: e.clientY,
+      moved: false,
+    };
   }
-  function handleAddCard(e) {
-    // Don't create a card when the user clicked an existing card.
+
+  function handleCanvasMouseMoveCapture(e) {
+    const gesture = canvasGesture.current;
+
+    if (!gesture || gesture.moved) return;
+
+    const dx = e.clientX - gesture.startX;
+    const dy = e.clientY - gesture.startY;
+
+    // Treat movement greater than 5px as a drag, not a click.
+    if (Math.hypot(dx, dy) > 5) {
+      gesture.moved = true;
+    }
+  }
+
+  function handleCanvasClick(e) {
+    const gesture = canvasGesture.current;
+
+    // Only a stationary click on empty canvas deselects.
     if (
-      !pressStartedOnEmptyCanvas.current ||
-      e.target !== e.currentTarget
+      e.target !== e.currentTarget ||
+      !gesture?.startedOnEmptyCanvas ||
+      gesture.moved
     ) {
-      pressStartedOnEmptyCanvas.current = false;
       return;
     }
 
-    pressStartedOnEmptyCanvas.current = false;
+    setActiveCardId(null);
+  }
 
-    // Canvas receives screen-space mouse coordinates.
-    // Cards are stored in world-space, so convert before creating one.
+  function handleAddCard(e) {
+    const gesture = canvasGesture.current;
+    canvasGesture.current = null;
+
+    if (
+      !gesture ||
+      !gesture.startedOnEmptyCanvas ||
+      gesture.moved ||
+      e.target !== e.currentTarget
+    ) {
+      return;
+    }
+
     const world = eventToWorld(e, camera);
-
     const newCardId = addCard(world.x, world.y);
     setActiveCardId(newCardId);
   }
@@ -45,7 +76,7 @@ export default function Canvas({
       onMouseMove={onMove}
       onMouseUp={stopAll}
       onMouseLeave={stopAll}
-      onMouseDown={startPan}
+      
       onWheel={onWheel}
       
       style={{
@@ -59,7 +90,10 @@ export default function Canvas({
     >
       <div
         onMouseDownCapture={handleCanvasMouseDown}
-        onClick={handleAddCard}
+        onMouseMoveCapture={handleCanvasMouseMoveCapture}
+        onMouseDown={startPan}
+        onClick={handleCanvasClick}
+        onDoubleClick={handleAddCard}
         style={{
           width: "100%",
           height: "100%",

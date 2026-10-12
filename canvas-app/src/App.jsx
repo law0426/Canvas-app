@@ -30,6 +30,43 @@ const {
   const [isDragging, setIsDragging] = useState(false);
   const [isTextManipulating, setIsTextManipulating] = useState(false);
 
+  const [recentCardIds, setRecentCardIds] = useState([]);
+
+  function selectCard(id) {
+    setActiveCardId(id);
+
+    // Deselecting doesn't change selection history.
+    if (id === null) {
+      setIsTextManipulating(false);
+
+      // Explicitly remove focus from the textarea.
+      if (document.activeElement instanceof HTMLTextAreaElement) {
+        document.activeElement.blur();
+      }
+
+      return;
+    }
+
+    // Most recently selected card goes first; keep only 10.
+    setRecentCardIds(prev =>
+      [id, ...prev.filter(existingId => existingId !== id)].slice(0, 10)
+    );
+  }
+
+  function deleteCard(id) {
+    removeCard(id);
+
+    // Remove deleted cards from selection history.
+    setRecentCardIds(prev =>
+      prev.filter(existingId => existingId !== id)
+    );
+
+    // Clear selection if the deleted card was active.
+    if (activeCardId === id) {
+      selectCard(null);
+    }
+  }
+
   const {
     camera,
     setCamera,
@@ -97,11 +134,14 @@ const {
       - text selection/editing
   */
   function startPan(e) {
-    if (e.button !== 1) return;
+    // Middle mouse pans anywhere; left mouse pans only on empty canvas.
+    const isMiddleMouse = e.button === 1;
+    const isLeftMouseOnBackground =
+      e.button === 0 && e.target === e.currentTarget;
 
-    // Prevent canvas from stealing focus
+    if (!isMiddleMouse && !isLeftMouseOnBackground) return;
+
     e.preventDefault();
-
     panning.current = true;
 
     panStart.current = {
@@ -202,25 +242,67 @@ const {
 
 
   useEffect(() => {
-  function handleKeyDown(e) {
+    function handleKeyDown(e) {
+      const target = e.target;
 
-    // Ignore typing inside editable cards
-    if (e.target.isContentEditable) return;
-    //Call reset camera
-    if (e.code === "Space") {
+      // Allow normal keyboard interaction with fields and buttons.
+      if (
+        target instanceof HTMLElement &&
+        (
+          target.isContentEditable ||
+          target.matches("input, textarea, select, button")
+        )
+      ) {
+        return;
+      }
+
+      if (e.code !== "Space") return;
+
       e.preventDefault();
-      resetCamera();
-    }
-  }
 
-  window.addEventListener("keydown", handleKeyDown);
-  window.addEventListener("mouseup", stopAll);
-  //if returning, do this?
+      // Prefer the active card; otherwise use the latest
+      // selected card that still exists.
+      const activeCard = cards.find(
+        card => card.id === activeCardId
+      );
+
+      const recentCardId = recentCardIds.find(
+        id => cards.some(card => card.id === id)
+      );
+
+      const targetCard =
+        activeCard ??
+        cards.find(card => card.id === recentCardId);
+
+      // Fall back to the existing camera reset if no card exists.
+      if (!targetCard) {
+        resetCamera();
+        return;
+      }
+
+      // Center the card while preserving the current zoom.
+      setCamera(prev => ({
+        ...prev,
+        x: window.innerWidth / 2 - targetCard.x * prev.zoom,
+        y: window.innerHeight / 2 - targetCard.y * prev.zoom,
+      }));
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("mouseup", stopAll);
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("mouseup", stopAll);
     };
-  }, []);
+  }, [
+    activeCardId,
+    recentCardIds,
+    cards,
+    setCamera,
+    resetCamera,
+    stopAll,
+  ]);
 
   return (
     <Canvas
@@ -230,7 +312,7 @@ const {
       startPan={startPan}
       onWheel={zoom}
       addCard={addCard}
-      setActiveCardId={setActiveCardId}
+      setActiveCardId={selectCard}
     >
       <WorldLayer camera={camera}>
         {cards.map((card) => (
@@ -239,12 +321,12 @@ const {
             card={card}
             camera={camera}
             updateText={updateText}
-            setActiveCardId={setActiveCardId}
+            setActiveCardId={selectCard}
             activeCardId={activeCardId}
             setIsDragging={setIsDragging}
             offset={offset}
             eventToWorld={eventToWorld}
-            removeCard={removeCard}
+            removeCard={deleteCard}
           />
         ))}
       </WorldLayer>
