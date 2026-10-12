@@ -12,7 +12,7 @@ export default function CardBack({
         height: "100%",
         padding: "10px",
         boxSizing: "border-box",
-        color: "white",
+        color: "black",
       }}
     >
       <strong>Tags</strong>

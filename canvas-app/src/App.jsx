@@ -4,6 +4,7 @@ import {
   eventToWorld
 } from "./utils/coordinates";
 import Card from "./components/Card";
+import useCards from "./hooks/useCards";
 import CardFace from "./components/CardFace";
 import CardBack from "./components/CardBack";
 import Canvas from "./components/Canvas";
@@ -15,49 +16,28 @@ import WorldLayer from "./components/WorldLayer";
 
 export default function App() {
 
-const [cards, setCards] = useState([
-    { id: 1, x: 100, y: 100, text: "Edit me" },
-  ]);
+const {
+    cards,
+    addCard,
+    updatePosition,
+    updateText,
+    removeCard
+  } = useCards();
+// we technically have another variable that we're not using: Tags[].
+// create an array, using set cards, and usestate... useState just initializes, accepting the initial argument.
 
+  const [activeCardId, setActiveCardId] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isTextManipulating, setIsTextManipulating] = useState(false);
 
-
-  /*
-    draggingId:
-    Tracks which card is currently being dragged.
-
-    null means:
-    - no card is being dragged
-
-    otherwise:
-    - stores the id of the active card
-  */
-  const [draggingId, setDraggingId] = useState(null);
-
-
-  /*
-    camera:
-    Represents the user's viewport into the world.
-
-    x, y:
-    - controls panning
-
-    zoom:
-    - controls scaling
-
-    This is NOT changing the card positions themselves.
-    It only changes how the world is viewed.
-  */
-  // const [camera, setCamera] = useState({
-  //   x: 0,
-  //   y: 0,
-  //   zoom: 1,
-  // });
   const {
     camera,
     setCamera,
     zoom,
     resetCamera,
   } = useCamera();
+
+  
 
 
   /*
@@ -99,38 +79,7 @@ const [cards, setCards] = useState([
   const panStart = useRef({ x: 0, y: 0 });
 
 
-  /*
-    startDrag()
-
-    Called when:
-    - user presses left mouse button on a card
-
-    Purpose:
-    - begin dragging a card
-    - calculate drag offset
-
-    Why e.button === 0:
-    - 0 = left click
-    - prevents middle click from dragging cards
-
-    Why stopPropagation():
-    - prevents card dragging from also triggering canvas panning
-  */
-  // function startDrag(e, card) {
-  //   if (e.button !== 0) return;
-
-  //   setDraggingId(card.id);
-
-  //   // Convert cursor from screen-space into world-space
-  //   const mouse = eventToWorld(e, camera);
-
-  //   offset.current = {
-  //     x: mouse.x - card.x,
-  //     y: mouse.y - card.y,
-  //   };
-
-  //   e.stopPropagation();
-  // }
+  
 
 
   /*
@@ -179,29 +128,13 @@ const [cards, setCards] = useState([
     /*
       CARD DRAGGING
     */
-    if (draggingId !== null) {
-
-      // Current cursor position in world-space
+    if (isDragging) {
       const mouse = eventToWorld(e, camera);
-      setCards((prev) =>
-        prev.map((c) =>
-          c.id === draggingId
-            ? {
-                ...c,
 
-                /*
-                  Mouse coordinates are screen-space.
-
-                  Card positions are world-space.
-
-                  So we convert screen -> world coordinates
-                  using camera transform math.
-                */
-                x: mouse.x - offset.current.x,
-                y: mouse.y - offset.current.y,
-              }
-            : c
-        )
+      updatePosition(
+        activeCardId,
+        mouse.x - offset.current.x,
+        mouse.y - offset.current.y
       );
     }
 
@@ -237,9 +170,10 @@ const [cards, setCards] = useState([
     Resets interaction state.
   */
   function stopAll() {
-    setDraggingId(null);
+    // Dragging has ended, but the card remains active/selected.
+    setIsDragging(false);
     panning.current = false;
-  }
+}
 
 
   /*
@@ -261,90 +195,12 @@ const [cards, setCards] = useState([
   function onWheel(e) {
   //e.preventDefault();
     zoom();
-
-  // //This part is now taken care of in camera.js
-  // const zoomFactor = 1.2;
-
-  // const newZoom =
-  //   e.deltaY < 0
-  //     ? camera.zoom * zoomFactor
-  //     : camera.zoom / zoomFactor;
-
-  // const clampedZoom = Math.min(3, Math.max(0.2, newZoom));
-
-  // // Mouse position relative to viewport
-  // const mouseX = e.clientX;
-  // const mouseY = e.clientY;
-
-  // // Convert mouse position into world coordinates BEFORE zoom
-  // const worldX = (mouseX - camera.x) / camera.zoom;
-  // const worldY = (mouseY - camera.y) / camera.zoom;
-
-  // // Recalculate camera position so cursor stays anchored
-  // const newCameraX = mouseX - worldX * clampedZoom;
-  // const newCameraY = mouseY - worldY * clampedZoom;
-
-  // setCamera({
-  //   x: newCameraX,
-  //   y: newCameraY,
-  //   zoom: clampedZoom,
-  // });
 }
 
-function addCardLocal(e){
-  addCard(e); //TODO Why isn't Card.addCard able to be called?
-  console.log("Call addCard");
-}
-
-  /*
-    updateText()
-
-    Called when:
-    - card loses focus after editing
-
-    Purpose:
-    - save edited text into React state
-
-    Why onBlur instead of onInput:
-    - contentEditable conflicts with React re-rendering
-    - updating every keystroke breaks cursor behavior
-  */
-  function updateText(id, text) {
-    setCards((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, text } : c))
-    );
-  }
 
 
 
 
-
-
-
-
-
-/*
-    RENDER
-
-    Outer div:
-    - viewport container
-    - handles global mouse events
-
-    Inner div:
-    - actual world/canvas
-    - transformed by camera
-  */
-
-    //REPLACE WITH camera.resetCamera();
-  // function resetCamera() {
-  //   setCamera({
-  //     x: 0,
-  //     y: 0,
-  //     zoom: 1,
-  //   });
-  // }
-
-  
   useEffect(() => {
   function handleKeyDown(e) {
 
@@ -373,7 +229,8 @@ function addCardLocal(e){
       stopAll={stopAll}
       startPan={startPan}
       onWheel={zoom}
-      addCard={addCardLocal}
+      addCard={addCard}
+      setActiveCardId={setActiveCardId}
     >
       <WorldLayer camera={camera}>
         {cards.map((card) => (
@@ -381,8 +238,13 @@ function addCardLocal(e){
             key={card.id}
             card={card}
             camera={camera}
-            startDrag={card.startDrag}
             updateText={updateText}
+            setActiveCardId={setActiveCardId}
+            activeCardId={activeCardId}
+            setIsDragging={setIsDragging}
+            offset={offset}
+            eventToWorld={eventToWorld}
+            removeCard={removeCard}
           />
         ))}
       </WorldLayer>

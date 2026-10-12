@@ -1,12 +1,12 @@
 export default function CardFace({
   card,
-  updateCardText,
+  updateText,
 }) {
   return (
     <textarea
       value={card.text}
       onChange={(e) =>
-        updateCardText(card.id, e.target.value)
+        updateText(card.id, e.target.value)
       }
       placeholder="Write something..."
       style={{
@@ -17,7 +17,7 @@ export default function CardFace({
         border: "none",
         outline: "none",
         background: "transparent",
-        color: "white",
+        color: "black",
         fontSize: "16px",
         padding: "10px",
         boxSizing: "border-box",
