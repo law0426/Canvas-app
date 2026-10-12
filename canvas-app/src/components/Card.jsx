@@ -13,9 +13,11 @@ export default function Card({
   offset,
   eventToWorld,
   updateText,
+  beginTextManipulation,
+  endTextManipulation,
   removeCard
 }) {
-  const [flipped, setFlipped] = useState(true);
+  const [flipped, setFlipped] = useState(false);
     /*
     cards:
     Stores every card on the canvas.
@@ -30,12 +32,25 @@ export default function Card({
   function handleMouseDown(e) {
     if (e.button !== 0) return;
 
-    if (activeCardId === card.id && e.target.tagName === "TEXTAREA") {
+    // Selected textarea: allow normal text interaction.
+    if (
+      activeCardId === card.id &&
+      e.target.tagName === "TEXTAREA"
+    ) {
       return;
+    }
+
+    // Unselected textarea: select and drag the card, not its text.
+    if (e.target.tagName === "TEXTAREA") {
+      e.preventDefault();
+    } else {
+      // Clicking elsewhere exits text manipulation.
+      endTextManipulation();
     }
 
     setActiveCardId(card.id);
     setIsDragging(true);
+
     const mouse = eventToWorld(e, camera);
 
     offset.current = {
@@ -81,6 +96,8 @@ export default function Card({
           <CardFace
             card={card}
             updateText={updateText}
+            beginTextManipulation={beginTextManipulation}
+            endTextManipulation={endTextManipulation}
           />
         )}
       </div>

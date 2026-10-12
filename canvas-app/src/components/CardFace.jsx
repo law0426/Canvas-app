@@ -1,6 +1,8 @@
 export default function CardFace({
   card,
   updateText,
+  beginTextManipulation,
+  endTextManipulation,
 }) {
   return (
     <textarea
@@ -8,6 +10,8 @@ export default function CardFace({
       onChange={(e) =>
         updateText(card.id, e.target.value)
       }
+      onFocus={beginTextManipulation}
+      onBlur={endTextManipulation}
       placeholder="Write something..."
       style={{
         pointerEvents: "auto",
