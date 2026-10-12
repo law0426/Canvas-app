@@ -77,7 +77,23 @@ export default function Canvas({
       onMouseUp={stopAll}
       onMouseLeave={stopAll}
       
-      onWheel={onWheel}
+      onWheel={(e) => {
+        const target = e.target;
+        const textarea =
+          target instanceof Element
+            ? target.closest("textarea")
+            : null;
+
+        // Let scrollable textareas handle their own scrolling.
+        if (
+          textarea &&
+          textarea.scrollHeight > textarea.clientHeight
+        ) {
+          return;
+        }
+
+        onWheel(e);
+      }}
       
       style={{
         width: "100vw",

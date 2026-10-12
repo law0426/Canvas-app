@@ -4,7 +4,28 @@ import { useState } from "react";
 
 export default function useCards() {
     const [cards, setCards] = useState([
-        { id: 1, x: 100, y: 100, text: "Edit me" }
+        {
+            id: 1,
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2,
+            width: 560,
+            height: 280,
+            text: `Welcome to your canvas!
+
+Double-click empty space to create a card.
+Drag empty space to pan the canvas.
+Middle-mouse drag also pans.
+Drag a card's border to move it.
+Click text on a selected card to edit.
+Click empty space to deselect.
+Press Space to center the selected or last selected card
+and reset zoom.
+
+Use the buttons above a selected card to switch sides
+or delete it.
+
+Note: Cards aren't saved yet. Refreshing resets your work.` 
+        },
     ]);
 
     function addCard(x, y) {

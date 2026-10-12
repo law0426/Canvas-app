@@ -82,7 +82,8 @@ export default function Card({
             : "none",
           borderRadius: "10px",
 
-          width: 240,
+          width: card.width ?? 240,
+          height: card.height ?? "auto",
           minHeight: 60,
           padding: 8,
 
