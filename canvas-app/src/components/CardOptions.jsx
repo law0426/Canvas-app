@@ -6,6 +6,7 @@ export default function CardOptions({
   setFlipped,
   x,
   y,
+  cardWidth,
   cardId,
   removeCard,
   setActiveCardId,
@@ -14,11 +15,13 @@ export default function CardOptions({
     <div
       style={{
         position: "absolute",
-        left: x + 75,
-        top: y - 75,
+        left: x + cardWidth / 2 + 8,
+        top: y,
+        transform: "translateY(-50%)",
         zIndex: 101,
         pointerEvents: "auto",
         display: "flex",
+        flexDirection: "column",
         gap: "6px",
       }}
     >

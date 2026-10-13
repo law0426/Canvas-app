@@ -301,6 +301,7 @@ export default function Card({
           setFlipped={setFlipped}
           x={card.x}
           y={card.y}
+          cardWidth={card.width ?? DEFAULT_CARD_WIDTH}
           cardId={card.id}
           removeCard={removeCard}
           setActiveCardId={setActiveCardId}

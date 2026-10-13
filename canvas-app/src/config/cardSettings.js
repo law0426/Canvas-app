@@ -56,10 +56,10 @@ export const RESIZE_SIZE_MODE_MATRIX = Object.freeze({
 export const RESIZE_EDGE_LENGTH_MODE = RESIZE_SIZE_MODE.BOUNDED;
 
 export const RESIZE_EDGE_LENGTH_PX = 32;
-export const RESIZE_EDGE_LENGTH_PERCENT = 20;
+export const RESIZE_EDGE_LENGTH_PERCENT = 25;
 
 export const RESIZE_EDGE_LENGTH_MIN_PX = 20;
-export const RESIZE_EDGE_LENGTH_MAX_PX = 48;
+export const RESIZE_EDGE_LENGTH_MAX_PX = 200;
 
 if (RESIZE_EDGE_LENGTH_MIN_PX > RESIZE_EDGE_LENGTH_MAX_PX) {
     throw new Error(
@@ -68,14 +68,14 @@ if (RESIZE_EDGE_LENGTH_MIN_PX > RESIZE_EDGE_LENGTH_MAX_PX) {
 }
 
 // Inherited sizing
-export const INHERIT_RESIZE_HANDLE_SIZES = true;
+export const INHERIT_RESIZE_HANDLE_SIZES = false;
 
 export const RESIZE_CORNER_RATIO = 0.6;
 export const RESIZE_EDGE_THICKNESS_RATIO = 0.55;
 
 
 // Independent sizes used when inheritance is disabled
-export const RESIZE_CORNER_SIZE_PX = 20;
+export const RESIZE_CORNER_SIZE_PX = 24;
 export const RESIZE_EDGE_THICKNESS_PX = 18;
 
 
