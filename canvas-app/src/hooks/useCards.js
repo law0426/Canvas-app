@@ -1,6 +1,6 @@
 // useCards.js
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export default function useCards() {
     const [cards, setCards] = useState([
@@ -57,16 +57,17 @@ Note: Cards aren't saved yet. Refreshing resets your work.`
             )
         );
     }
+    
 
-    function updateSize(id, width, height) {
+    const updateGeometry = useCallback((id, x, y, width, height) => {
         setCards(prev =>
             prev.map(card =>
                 card.id === id
-                    ? { ...card, width, height }
+                    ? { ...card, x, y, width, height }
                     : card
             )
         );
-    }
+    }, []);
 
     function updateText(id, text) {
         setCards(prev =>
@@ -88,7 +89,7 @@ Note: Cards aren't saved yet. Refreshing resets your work.`
         cards,
         addCard,
         updatePosition,
-        updateSize,
+        updateGeometry,
         updateText,
         removeCard
     };

@@ -1,4 +1,11 @@
 import { useState, useEffect } from "react";
+import {
+  DEFAULT_CARD_WIDTH,
+  DEFAULT_CARD_HEIGHT,
+  MIN_CARD_WIDTH,
+  MIN_CARD_HEIGHT,
+  getResizeHandleSizes,
+} from "../config/cardSettings";
 import CardFace from "./CardFace";
 import CardBack from "./CardBack";
 import CardOptions from "./CardOptions";
@@ -16,12 +23,20 @@ export default function Card({
   updateText,
   beginTextManipulation,
   endTextManipulation,
-  updateSize,
-  updatePosition,
+  updateGeometry,
   removeCard
 }) {
   const [flipped, setFlipped] = useState(false);
   const [resizeState, setResizeState] = useState(null);
+  const handleSizes = activeCardId === card.id
+    ? (
+        resizeState?.handleSizes ??
+        getResizeHandleSizes(
+          card.width ?? DEFAULT_CARD_WIDTH,
+          card.height ?? DEFAULT_CARD_HEIGHT
+        )
+      )
+    : null;
     
   function handleMouseDown(e) {
     if (e.button !== 0) return;
@@ -70,8 +85,9 @@ export default function Card({
       startY: e.clientY,
       x: card.x,
       y: card.y,
-      width: card.width ?? 240,
-      height: card.height ?? 180,
+      width: card.width ?? DEFAULT_CARD_WIDTH,
+      height: card.height ?? DEFAULT_CARD_HEIGHT,
+      handleSizes,
       zoom: camera.zoom,
     });
   }
@@ -96,23 +112,21 @@ export default function Card({
           : 0;
 
       const width = Math.max(
-        120,
+        MIN_CARD_WIDTH,
         resizeState.width + dx * horizontal
       );
 
       const height = Math.max(
-        60,
+        MIN_CARD_HEIGHT,
         resizeState.height + dy * vertical
       );
 
-      // Resize the card.
-      updateSize(card.id, width, height);
-
-      // Move its center so the opposite edge stays in place.
-      updatePosition(
+      updateGeometry(
         card.id,
         resizeState.x + horizontal * (width - resizeState.width) / 2,
-        resizeState.y + vertical * (height - resizeState.height) / 2
+        resizeState.y + vertical * (height - resizeState.height) / 2,
+        width,
+        height
       );
     }
 
@@ -127,7 +141,7 @@ export default function Card({
       window.removeEventListener("mousemove", handleResizeMove);
       window.removeEventListener("mouseup", handleResizeEnd);
     };
-  }, [resizeState, card.id, updateSize, updatePosition]);
+  }, [resizeState, card.id, updateGeometry]);
  
   return (
     <>
@@ -148,10 +162,9 @@ export default function Card({
             ? "inset 0 0 0 4px #4fb3a9"
             : "none",
           borderRadius: "10px",
-
-          width: card.width ?? 240,
-          height: card.height ?? 180,
-          minHeight: 60,
+          width: card.width ?? DEFAULT_CARD_WIDTH,
+          height: card.height ?? DEFAULT_CARD_HEIGHT,
+          minHeight: MIN_CARD_HEIGHT,
           padding: 8,
           paddingTop: 16,
           boxSizing: "border-box",
@@ -179,37 +192,94 @@ export default function Card({
         )}
         {activeCardId === card.id &&
           [
-            {
-              direction: "n",
-              style: { top: 0, left: 8, right: 8, height: 6, cursor: "n-resize" },
-            },
-            {
-              direction: "s",
-              style: { bottom: 0, left: 8, right: 8, height: 6, cursor: "s-resize" },
-            },
-            {
-              direction: "w",
-              style: { left: 0, top: 8, bottom: 8, width: 6, cursor: "w-resize" },
-            },
-            {
-              direction: "e",
-              style: { right: 0, top: 8, bottom: 8, width: 6, cursor: "e-resize" },
-            },
+            // Corners: resize both width and height.
             {
               direction: "nw",
-              style: { top: 0, left: 0, width: 10, height: 10, cursor: "nw-resize" },
+              style: {
+                top: 0,
+                left: 0,
+                width: handleSizes.cornerSize,
+                height: handleSizes.cornerSize,
+                cursor: "nw-resize",
+              },
             },
             {
               direction: "ne",
-              style: { top: 0, right: 0, width: 10, height: 10, cursor: "ne-resize" },
+              style: {
+                top: 0,
+                right: 0,
+                width: handleSizes.cornerSize,
+                height: handleSizes.cornerSize,
+                cursor: "ne-resize",
+              },
             },
             {
               direction: "sw",
-              style: { bottom: 0, left: 0, width: 10, height: 10, cursor: "sw-resize" },
+              style: {
+                bottom: 0,
+                left: 0,
+                width: handleSizes.cornerSize,
+                height: handleSizes.cornerSize,
+                cursor: "sw-resize",
+              },
             },
             {
               direction: "se",
-              style: { bottom: 0, right: 0, width: 10, height: 10, cursor: "se-resize" },
+              style: {
+                bottom: 0,
+                right: 0,
+                width: handleSizes.cornerSize,
+                height: handleSizes.cornerSize,
+                cursor: "se-resize",
+              },
+            },
+
+            // Top and bottom: resize width.
+            {
+              direction: "n",
+              style: {
+                top: 0,
+                left: "50%",
+                width: handleSizes.horizontalEdgeLength,
+                height: handleSizes.horizontalEdgeThickness,
+                transform: "translateX(-50%)",
+                cursor: "n-resize",
+              },
+            },
+            {
+              direction: "s",
+              style: {
+                bottom: 0,
+                left: "50%",
+                width: handleSizes.horizontalEdgeLength,
+                height: handleSizes.horizontalEdgeThickness,
+                transform: "translateX(-50%)",
+                cursor: "s-resize",
+              },
+            },
+
+            // Left and right: resize height.
+            {
+              direction: "w",
+              style: {
+                left: 0,
+                top: "50%",
+                width: handleSizes.verticalEdgeThickness,
+                height: handleSizes.verticalEdgeLength,
+                transform: "translateY(-50%)",
+                cursor: "w-resize",
+              },
+            },
+            {
+              direction: "e",
+              style: {
+                right: 0,
+                top: "50%",
+                width: handleSizes.verticalEdgeThickness,
+                height: handleSizes.verticalEdgeLength,
+                transform: "translateY(-50%)",
+                cursor: "e-resize",
+              },
             },
           ].map(({ direction, style }) => (
             <div

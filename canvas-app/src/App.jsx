@@ -21,7 +21,7 @@ const {
     cards,
     addCard,
     updatePosition,
-    updateSize,
+    updateGeometry,
     updateText,
     removeCard
   } = useCards();
@@ -88,8 +88,7 @@ const {
             offset={offset}
             eventToWorld={eventToWorld}
             removeCard={deleteCard}
-            updateSize={updateSize}
-            updatePosition={updatePosition}
+            updateGeometry={updateGeometry}
             isTextManipulating={isTextManipulating}
             beginTextManipulation={beginTextManipulation}
             endTextManipulation={endTextManipulation}
