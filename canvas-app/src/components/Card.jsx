@@ -7,6 +7,7 @@ import CardOptions from "./CardOptions";
 export default function Card({
   card,
   activeCardId,
+  isTextManipulating,
   camera,
   setActiveCardId,
   setIsDragging,
@@ -83,12 +84,21 @@ export default function Card({
           borderRadius: "10px",
 
           width: card.width ?? 240,
-          height: card.height ?? "auto",
+          height: card.height ?? 180,
           minHeight: 60,
           padding: 8,
-
+          paddingTop: 16,
+          boxSizing: "border-box",
+          overflow: "hidden",
+          display: "flex",
+          // flexDirection: "column",
+          // gap: 6,
           background: "#fff",
           cursor: "move",
+          userSelect:
+            activeCardId === card.id && isTextManipulating
+              ? "text"
+              : "none",
         }}
       >
         {flipped ? (

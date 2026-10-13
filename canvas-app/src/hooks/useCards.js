@@ -58,6 +58,16 @@ Note: Cards aren't saved yet. Refreshing resets your work.`
         );
     }
 
+    function updateSize(id, width, height) {
+        setCards(prev =>
+            prev.map(card =>
+                card.id === id
+                    ? { ...card, width, height }
+                    : card
+            )
+        );
+    }
+
     function updateText(id, text) {
         setCards(prev =>
             prev.map(card =>
@@ -78,6 +88,7 @@ Note: Cards aren't saved yet. Refreshing resets your work.`
         cards,
         addCard,
         updatePosition,
+        updateSize,
         updateText,
         removeCard
     };
