@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/Knowtable.Api/Knowtable.Api.csproj" />
+  </Folder>
+</Solution>
