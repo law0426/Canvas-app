@@ -68,6 +68,51 @@ public sealed class StorageOrchestrator
         };
     }
 
+    public async Task<CardDto?> CreateCardAsync(
+        Guid projectId,
+        double x,
+        double y,
+        CancellationToken cancellationToken = default)
+    {
+        var project = await _projectStorage.LoadProjectAsync(
+            projectId, cancellationToken);
+
+        if (project is null)
+            return null;
+
+        var timestamp = DateTimeOffset.UtcNow;
+
+        var card = new CardDocument
+        {
+            Id = Guid.NewGuid(),
+            FrontText = "New card",
+            Back = new CardBackDocument(),
+            SavedAtUtc = timestamp
+        };
+
+        // Create both starting versions.
+        await _cardStorage.StoreSavedCardAsync(card, cancellationToken);
+        await _cardStorage.StoreUnsavedCardAsync(
+            projectId, card, cancellationToken);
+
+        var geometry = new CardGeometry
+        {
+            X = x,
+            Y = y
+        };
+
+        project.Cards.Add(new CardInstance
+        {
+            CardId = card.Id,
+            Geometry = geometry
+        });
+
+        await _projectStorage.StoreProjectAsync(
+            project, cancellationToken);
+
+        return ToDto(card, geometry);
+    }
+
     // Autosave card content to the project's working copy.
     public async Task<CardDto> AutosaveCardAsync(
         Guid projectId,
