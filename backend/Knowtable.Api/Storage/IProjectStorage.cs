@@ -5,15 +5,10 @@ namespace Knowtable.Api.Storage;
 public interface IProjectStorage
 {
     Task<ProjectDocument?> LoadProjectAsync(
-        string projectId,
+        Guid projectId,
         CancellationToken cancellationToken = default);
 
-    Task SaveProjectAsync(
+    Task StoreProjectAsync(
         ProjectDocument project,
-        CancellationToken cancellationToken = default);
-
-    Task<string> CreateManualSnapshotAsync(
-        ProjectDocument project,
-        IReadOnlyCollection<CardDocument> cards,
         CancellationToken cancellationToken = default);
 }

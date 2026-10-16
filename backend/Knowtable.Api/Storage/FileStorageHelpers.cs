@@ -1,7 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
-using Knowtable.Api.Models;
 using Microsoft.Extensions.Configuration;
 
 namespace Knowtable.Api.Storage;
@@ -28,27 +26,6 @@ internal static class FileStorageHelpers
             documentsPath = AppContext.BaseDirectory;
 
         return Path.Combine(documentsPath, "KnowtableData");
-    }
-
-    internal static string ValidateProjectId(string projectId)
-    {
-        if (string.IsNullOrWhiteSpace(projectId) ||
-            !Regex.IsMatch(projectId, @"\A[a-zA-Z0-9_-]+\z"))
-        {
-            throw new ArgumentException(
-                "Project IDs may contain only letters, numbers, hyphens, and underscores.",
-                nameof(projectId));
-        }
-
-        return projectId;
-    }
-
-    internal static string GetCardFolderName(long cardId)
-    {
-        if (cardId <= 0)
-            throw new ArgumentOutOfRangeException(nameof(cardId));
-
-        return cardId.ToString();
     }
 
     internal static async Task<T?> ReadJsonAsync<T>(
@@ -104,27 +81,4 @@ internal static class FileStorageHelpers
                 File.Delete(tempPath);
         }
     }
-
-    internal static async Task WriteCardFilesAsync(
-        string cardsRoot,
-        CardDocument card,
-        CancellationToken cancellationToken = default)
-    {
-        var cardDirectory = Path.Combine(
-            cardsRoot,
-            GetCardFolderName(card.Id));
-
-        Directory.CreateDirectory(cardDirectory);
-
-        await WriteTextAtomicallyAsync(
-            Path.Combine(cardDirectory, "front.txt"),
-            card.FrontText ?? string.Empty,
-            cancellationToken);
-
-        await WriteJsonAtomicallyAsync(
-            Path.Combine(cardDirectory, "back.json"),
-            card.Back ?? new CardBackData(),
-            cancellationToken);
-    }
 }
-

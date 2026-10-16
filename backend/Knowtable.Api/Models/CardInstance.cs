@@ -2,7 +2,7 @@ namespace Knowtable.Api.Models;
 
 public sealed class CardInstance
 {
-    public long CardId { get; set; }
+    public Guid CardId { get; set; }
 
     public CardGeometry Geometry { get; set; } = new();
 }
