@@ -24,6 +24,7 @@ export default function App() {
   const {
     cards,
     replaceCards,
+    isDirty,
     addCard,
     updatePosition,
     updateGeometry,
@@ -35,9 +36,10 @@ export default function App() {
     projectId,
     isLoading,
     error,
-    createProject,
-    isCreatingProject,
+    startNewProject,
+    isStartingNewProject,
     loadProject,
+    activateSavedProject,
   } = useProjectLoader(replaceCards);
 
   const {
@@ -124,19 +126,21 @@ export default function App() {
       />
 
       <NewProjectButton
-        createProject={createProject}
-        isCreatingProject={isCreatingProject}
+        startNewProject={startNewProject}
+        isStartingNewProject={isStartingNewProject}
       />
-      
+
       <NewProjectButton
-        createProject={createProject}
-        isCreatingProject={isCreatingProject}
+        startNewProject={startNewProject}
+        isStartingNewProject={isStartingNewProject}
       />
 
       <ProjectSaveButton
         projectId={projectId}
         cards={cards}
         replaceCards={replaceCards}
+        isDirty={isDirty}
+        activateSavedProject={activateSavedProject}
       />
     </>
   );

@@ -1,21 +1,31 @@
 import { useCallback, useState } from "react";
 
-export default function useProjectService({ projectId, replaceCards }) {
+export default function useProjectService({
+    projectId,
+    replaceCards,
+    activateSavedProject,
+    isDirty,
+}) {
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState(null);
 
     const saveProject = useCallback(async (cards) => {
-        if (!projectId || isSaving) return;
+        if (!isDirty || isSaving) return;
+
+        const isDraft = !projectId;
+        const endpoint = isDraft
+            ? "/api/projects/draft/save"
+            : `/api/projects/${projectId}/save`;
 
         setIsSaving(true);
         setError(null);
 
         try {
-            const response = await fetch(`/api/projects/${projectId}/save`, {
+            const response = await fetch(endpoint, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    id: projectId,
+                    id: projectId ?? "00000000-0000-0000-0000-000000000000",
                     cards: cards.map(card => ({
                         id: card.id,
                         text: card.text ?? "",
@@ -33,13 +43,24 @@ export default function useProjectService({ projectId, replaceCards }) {
             }
 
             const project = await response.json();
-            replaceCards(project.cards ?? []);
+
+            if (isDraft) {
+                activateSavedProject(project);
+            } else {
+                replaceCards(project.cards ?? []);
+            }
         } catch (err) {
             setError(err.message);
         } finally {
             setIsSaving(false);
         }
-    }, [projectId, isSaving, replaceCards]);
+    }, [
+        projectId,
+        isDirty,
+        isSaving,
+        replaceCards,
+        activateSavedProject,
+    ]);
 
     return { saveProject, isSaving, error };
 }

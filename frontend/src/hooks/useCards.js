@@ -5,11 +5,19 @@ import { useCallback, useState } from "react";
 export default function useCards() {
     const [cards, setCards] = useState([]);
 
+    const [isDirty, setIsDirty] = useState(false);
+
+    const markClean = useCallback(() => {
+        setIsDirty(false);
+    }, []);
+
     const replaceCards = useCallback((nextCards) => {
         setCards(nextCards);
+        setIsDirty(false);
     }, []);
 
     function addCard(x, y) {
+        setIsDirty(true);
         const newCardId = crypto.randomUUID();
         setCards(prev => [
             ...prev,
@@ -30,6 +38,7 @@ export default function useCards() {
     }
 
     function updatePosition(id, x, y) {
+        setIsDirty(true);
         setCards(prev =>
             prev.map(card =>
                 card.id === id
@@ -41,6 +50,7 @@ export default function useCards() {
     
 
     const updateGeometry = useCallback((id, x, y, width, height) => {
+        setIsDirty(true);
         setCards(prev =>
             prev.map(card =>
                 card.id === id
@@ -51,6 +61,7 @@ export default function useCards() {
     }, []);
 
     function updateText(id, text) {
+        setIsDirty(true);
         setCards(prev =>
             prev.map(card =>
                 card.id === id
@@ -61,6 +72,7 @@ export default function useCards() {
     }
 
     function removeCard(id) {
+        setIsDirty(true);
         setCards(prev =>
             prev.filter(card => card.id !== id)
         );
@@ -73,6 +85,8 @@ export default function useCards() {
         updatePosition,
         updateGeometry,
         updateText,
-        removeCard
+        removeCard,
+        isDirty,
+        markClean,
     };
 }

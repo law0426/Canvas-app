@@ -7,39 +7,41 @@ export default function useProjectLoader(replaceCards) {
         () => localStorage.getItem(PROJECT_ID_KEY)
     );
     const [isLoading, setIsLoading] = useState(true);
-    const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const [isStartingNewProject, setIsStartingNewProject] = useState(false);
     const [error, setError] = useState(null);
     const started = useRef(false);
 
-    const createProject = useCallback(async () => {
-        setIsCreatingProject(true);
+    const fetchDraft = useCallback(async () => {
+        const response = await fetch("/api/projects/draft");
+
+        if (!response.ok) {
+            throw new Error(`Loading draft failed: ${response.status}`);
+        }
+
+        return response.json();
+    }, []);
+
+    const startNewProject = useCallback(async () => {
+        setIsStartingNewProject(true);
         setError(null);
 
         try {
-            const response = await fetch("/api/projects", {
-                method: "POST",
-            });
+            const draft = await fetchDraft();
 
-            if (!response.ok) {
-                throw new Error(`Creating project failed: ${response.status}`);
-            }
-
-            const project = await response.json();
-
-            localStorage.setItem(PROJECT_ID_KEY, project.id);
-            setProjectId(project.id);
-            replaceCards(project.cards ?? []);
+            localStorage.removeItem(PROJECT_ID_KEY);
+            setProjectId(null);
+            replaceCards(draft.cards ?? []);
 
             return true;
         } catch (err) {
             setError(err.message);
             return false;
         } finally {
-            setIsCreatingProject(false);
+            setIsStartingNewProject(false);
         }
-    }, [replaceCards]);
+    }, [fetchDraft, replaceCards]);
 
-        const loadProject = useCallback(async (id) => {
+    const loadProject = useCallback(async (id) => {
         setIsLoading(true);
         setError(null);
 
@@ -65,32 +67,44 @@ export default function useProjectLoader(replaceCards) {
         }
     }, [replaceCards]);
 
+    const activateSavedProject = useCallback((project) => {
+        localStorage.setItem(PROJECT_ID_KEY, project.id);
+        setProjectId(project.id);
+        replaceCards(project.cards ?? []);
+    }, [replaceCards]);
+
     useEffect(() => {
         if (started.current) return;
         started.current = true;
 
         async function initializeProject() {
             try {
-                let id = localStorage.getItem(PROJECT_ID_KEY);
+                const id = localStorage.getItem(PROJECT_ID_KEY);
 
                 if (id) {
                     const response = await fetch(`/api/projects/${id}`);
 
-                    if (response.status === 404) {
-                        localStorage.removeItem(PROJECT_ID_KEY);
-                        id = null;
-                    } else if (!response.ok) {
-                        throw new Error(`Loading project failed: ${response.status}`);
-                    } else {
+                    if (response.ok) {
                         const project = await response.json();
 
                         setProjectId(project.id);
                         replaceCards(project.cards ?? []);
                         return;
                     }
+
+                    if (response.status !== 404) {
+                        throw new Error(
+                            `Loading project failed: ${response.status}`
+                        );
+                    }
+
+                    localStorage.removeItem(PROJECT_ID_KEY);
                 }
 
-                await createProject();
+                const draft = await fetchDraft();
+
+                setProjectId(null);
+                replaceCards(draft.cards ?? []);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -99,14 +113,15 @@ export default function useProjectLoader(replaceCards) {
         }
 
         initializeProject();
-    }, [replaceCards, createProject]);
+    }, [fetchDraft, replaceCards]);
 
     return {
         projectId,
         isLoading,
-        isCreatingProject,
+        isStartingNewProject,
         error,
-        createProject,
+        startNewProject,
         loadProject,
+        activateSavedProject, 
     };
 }

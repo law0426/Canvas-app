@@ -4,10 +4,14 @@ export default function ProjectSaveButton({
     projectId,
     cards,
     replaceCards,
+    isDirty, 
+    activateSavedProject,
 }) {
     const { saveProject, isSaving, error } = useProjectService({
         projectId,
         replaceCards,
+        activateSavedProject,
+        isDirty, 
     });
 
     return (
@@ -22,7 +26,7 @@ export default function ProjectSaveButton({
             <button
                 type="button"
                 onClick={() => saveProject(cards)}
-                disabled={!projectId || isSaving}
+                disabled={!isDirty || isSaving}
                 style={{
                     padding: "10px 18px",
                     cursor: isSaving ? "wait" : "pointer",

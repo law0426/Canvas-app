@@ -10,10 +10,13 @@ Backend currently handles persistence of data.
 command lines:
 
 bash Terminal1:
+
 dotnet run --project backend/Knowtable.Api
 
 bash Terminal2:
+
 cd frontend
+
 npm run dev
 
 

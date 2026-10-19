@@ -1,22 +1,22 @@
 export default function NewProjectButton({
-    createProject,
-    isCreatingProject,
+    startNewProject,
+    isStartingNewProject,
 }) {
     return (
         <button
             type="button"
-            onClick={createProject}
-            disabled={isCreatingProject}
+            onClick={startNewProject}
+            disabled={isStartingNewProject}
             style={{
                 position: "fixed",
                 top: 16,
                 left: 16,
                 zIndex: 10000,
                 padding: "10px 18px",
-                cursor: isCreatingProject ? "wait" : "pointer",
+                cursor: isStartingNewProject ? "wait" : "pointer",
             }}
         >
-            {isCreatingProject ? "Creating..." : "New project"}
+            {isStartingNewProject ? "Starting..." : "New project"}
         </button>
     );
 }

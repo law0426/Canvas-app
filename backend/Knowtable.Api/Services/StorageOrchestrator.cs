@@ -18,52 +18,31 @@ public sealed class StorageOrchestrator
         _cardStorage = cardStorage;
     }
 
-    public async Task<ProjectDto> CreateProjectAsync(
+    public async Task<ProjectDto> LoadDraftProjectAsync(
         CancellationToken cancellationToken = default)
     {
-        var welcomeCard = await _cardStorage.LoadSavedCardAsync(
-            WelcomeCardId, cancellationToken);
+        var welcomeCard = await GetOrCreateWelcomeCardAsync(
+            cancellationToken);
 
-        // Create the saved welcome card on first use.
-        if (welcomeCard is null)
+        return new ProjectDto
         {
-            welcomeCard = new CardDocument
+            Id = Guid.Empty,
+            SavedAtUtc = DateTimeOffset.UtcNow,
+            Cards =
             {
-                Id = WelcomeCardId,
-                FrontText =
-                    """
-                    Welcome to your canvas!
-
-                    Double-click empty space to create a card.
-                    Drag empty space to pan the canvas.
-                    Middle-mouse drag also pans.
-                    Drag a card's border to move it.
-                    Click text on a selected card to edit.
-                    Click empty space to deselect.
-                    Press Space to center the selected or last selected card
-                    and reset zoom.
-
-                    Use the buttons above a selected card to switch sides
-                    or delete it.
-                    Use Save project to save your changes.
-                    """,
-                Back = new CardBackDocument(),
-                SavedAtUtc = DateTimeOffset.UtcNow
-            };
-
-            await _cardStorage.StoreSavedCardAsync(
-                welcomeCard, cancellationToken);
-        }
-
-        var geometry = new CardGeometry
-        {
-            X = 100,
-            Y = 100,
-            Width = 560,
-            Height = 280
+                ToDto(welcomeCard, GetWelcomeGeometry())
+            }
         };
+    }
 
-        // Create this project's independent working copy.
+        public async Task<ProjectDto> CreateProjectAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var welcomeCard = await GetOrCreateWelcomeCardAsync(
+            cancellationToken);
+
+        var geometry = GetWelcomeGeometry();
+
         var workingCopy = new CardDocument
         {
             Id = welcomeCard.Id,
@@ -98,10 +77,7 @@ public sealed class StorageOrchestrator
         {
             Id = project.Id,
             SavedAtUtc = project.SavedAtUtc,
-            Cards =
-            {
-                ToDto(workingCopy, geometry)
-            }
+            Cards = { ToDto(workingCopy, geometry) }
         };
     }
 
@@ -226,6 +202,22 @@ public sealed class StorageOrchestrator
         card.SavedAtUtc = document.SavedAtUtc;
 
         return card;
+    }
+
+    public async Task<ProjectDto> SaveDraftProjectAsync(
+        ProjectDto draft,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(draft);
+
+        if (draft.Id != Guid.Empty)
+            throw new ArgumentException(
+                "Only drafts without a project ID can use this operation.",
+                nameof(draft));
+
+        draft.Id = Guid.NewGuid();
+
+        return await SaveProjectAsync(draft, cancellationToken);
     }
 
     public async Task<ProjectDto> SaveProjectAsync(
@@ -410,4 +402,51 @@ public sealed class StorageOrchestrator
                 "A project cannot contain duplicate card IDs.");
         }
     }
+
+    private async Task<CardDocument> GetOrCreateWelcomeCardAsync(
+        CancellationToken cancellationToken)
+    {
+        var card = await _cardStorage.LoadSavedCardAsync(
+            WelcomeCardId, cancellationToken);
+
+        if (card is not null)
+            return card;
+
+        card = new CardDocument
+        {
+            Id = WelcomeCardId,
+            FrontText =
+                """
+                Welcome to your canvas!
+
+                Double-click empty space to create a card.
+                Drag empty space to pan the canvas.
+                Middle-mouse drag also pans.
+                Drag a card's border to move it.
+                Click text on a selected card to edit.
+                Click empty space to deselect.
+                Press Space to center the selected or last selected card
+                and reset zoom.
+
+                Use the buttons above a selected card to switch sides
+                or delete it.
+                Use Save project to save your changes.
+                """,
+            Back = new CardBackDocument(),
+            SavedAtUtc = DateTimeOffset.UtcNow
+        };
+
+        await _cardStorage.StoreSavedCardAsync(
+            card, cancellationToken);
+
+        return card;
+    }
+
+    private static CardGeometry GetWelcomeGeometry() => new()
+    {
+        X = 100,
+        Y = 100,
+        Width = 560,
+        Height = 280
+    };
 }

@@ -18,6 +18,16 @@ public sealed class ProjectsController : ControllerBase
         _storage = storage;
     }
 
+    [HttpGet("draft")]
+    public async Task<ActionResult<ProjectDto>> GetDraft(
+        CancellationToken cancellationToken)
+    {
+        var draft = await _storage.LoadDraftProjectAsync(
+            cancellationToken);
+
+        return Ok(draft);
+    }
+
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<ProjectDocument>>> ListProjects(
         CancellationToken cancellationToken)
@@ -32,6 +42,23 @@ public sealed class ProjectsController : ControllerBase
     {
         var project = await _storage.CreateProjectAsync(
             cancellationToken);
+
+        return CreatedAtAction(
+            nameof(GetProject),
+            new { projectId = project.Id },
+            project);
+    }
+
+    [HttpPost("draft/save")]
+    public async Task<ActionResult<ProjectDto>> SaveDraftProject(
+        ProjectDto draft,
+        CancellationToken cancellationToken)
+    {
+        if (draft.Id != Guid.Empty)
+            return BadRequest("This endpoint only accepts new drafts.");
+
+        var project = await _storage.SaveDraftProjectAsync(
+            draft, cancellationToken);
 
         return CreatedAtAction(
             nameof(GetProject),
