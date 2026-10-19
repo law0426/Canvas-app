@@ -13,18 +13,30 @@ import {
   useCamera
 } from "./utils/camera"
 import WorldLayer from "./components/WorldLayer";
+import useProjectLoader from "./hooks/useProjectLoader";
+import ProjectSaveButton from "./components/ProjectSaveButton";
+import NewProjectButton from "./components/NewProjectButton";
 
 
 export default function App() {
 
-const {
+  const {
     cards,
+    replaceCards,
     addCard,
     updatePosition,
     updateGeometry,
     updateText,
     removeCard
   } = useCards();
+
+  const {
+    projectId,
+    isLoading,
+    error,
+    createProject,
+    isCreatingProject,
+  } = useProjectLoader(replaceCards);
 
   const {
     activeCardId,
@@ -65,36 +77,55 @@ const {
     updatePosition,
   });
 
-  return (
-    <Canvas
-      camera={camera}
-      onMove={onMove}
-      stopAll={stopAll}
-      startPan={startPan}
-      onWheel={zoom}
-      addCard={addCard}
-      setActiveCardId={selectCard}
-    >
-      <WorldLayer camera={camera}>
-        {cards.map((card) => (
-          <Card
-            key={card.id}
-            card={card}
-            camera={camera}
-            updateText={updateText}
-            setActiveCardId={selectCard}
-            activeCardId={activeCardId}
-            setIsDragging={setIsDragging}
-            offset={offset}
-            eventToWorld={eventToWorld}
-            removeCard={deleteCard}
-            updateGeometry={updateGeometry}
-            isTextManipulating={isTextManipulating}
-            beginTextManipulation={beginTextManipulation}
-            endTextManipulation={endTextManipulation}
-          />
-        ))}
-      </WorldLayer>
-    </Canvas>
+  if (isLoading) return <p>Loading project...</p>;
+
+  if (error) {
+    return <p role="alert">Failed to load project: {error}</p>;
+  }
+
+    return (
+    <>
+      <Canvas
+        camera={camera}
+        onMove={onMove}
+        stopAll={stopAll}
+        startPan={startPan}
+        onWheel={zoom}
+        addCard={addCard}
+        setActiveCardId={selectCard}
+      >
+        <WorldLayer camera={camera}>
+          {cards.map((card) => (
+            <Card
+              key={card.id}
+              card={card}
+              camera={camera}
+              updateText={updateText}
+              setActiveCardId={selectCard}
+              activeCardId={activeCardId}
+              setIsDragging={setIsDragging}
+              offset={offset}
+              eventToWorld={eventToWorld}
+              removeCard={deleteCard}
+              updateGeometry={updateGeometry}
+              isTextManipulating={isTextManipulating}
+              beginTextManipulation={beginTextManipulation}
+              endTextManipulation={endTextManipulation}
+            />
+          ))}
+        </WorldLayer>
+      </Canvas>
+      
+      <NewProjectButton
+        createProject={createProject}
+        isCreatingProject={isCreatingProject}
+      />
+
+      <ProjectSaveButton
+        projectId={projectId}
+        cards={cards}
+        replaceCards={replaceCards}
+      />
+    </>
   );
 }

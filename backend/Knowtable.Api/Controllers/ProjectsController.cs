@@ -22,20 +22,28 @@ public sealed class ProjectsController : ControllerBase
     public async Task<ActionResult<ProjectDto>> CreateProject(
         CancellationToken cancellationToken)
     {
-        var project = new ProjectDto
-        {
-            Id = Guid.NewGuid(),
-            SavedAtUtc = DateTimeOffset.UtcNow
-        };
-
-        await _storage.AutosaveProjectLayoutAsync(
-            project,
+        var project = await _storage.CreateProjectAsync(
             cancellationToken);
 
         return CreatedAtAction(
             nameof(GetProject),
             new { projectId = project.Id },
             project);
+    }
+
+    [HttpPost("{projectId:guid}/save")]
+    public async Task<ActionResult<ProjectDto>> SaveProject(
+        Guid projectId,
+        ProjectDto project,
+        CancellationToken cancellationToken)
+    {
+        if (project.Id != projectId)
+            return BadRequest("Project ID does not match the route.");
+
+        var result = await _storage.SaveProjectAsync(
+            project, cancellationToken);
+
+        return Ok(result);
     }
 
     [HttpGet("{projectId:guid}")]

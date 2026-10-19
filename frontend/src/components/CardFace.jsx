@@ -6,6 +6,8 @@ export default function CardFace({
 }) {
   return (
     <textarea
+      id={`card-text-${card.id}`}
+      name={`card-text-${card.id}`}
       value={card.text}
       onChange={(e) =>
         updateText(card.id, e.target.value)

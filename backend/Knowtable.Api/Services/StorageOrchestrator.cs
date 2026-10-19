@@ -7,6 +7,8 @@ public sealed class StorageOrchestrator
 {
     private readonly IProjectStorage _projectStorage;
     private readonly ICardStorage _cardStorage;
+    private static readonly Guid WelcomeCardId =
+    Guid.Parse("d5fba12a-8a5e-4e0e-9e3a-7a38cf67c442");
 
     public StorageOrchestrator(
         IProjectStorage projectStorage,
@@ -14,6 +16,93 @@ public sealed class StorageOrchestrator
     {
         _projectStorage = projectStorage;
         _cardStorage = cardStorage;
+    }
+
+    public async Task<ProjectDto> CreateProjectAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var welcomeCard = await _cardStorage.LoadSavedCardAsync(
+            WelcomeCardId, cancellationToken);
+
+        // Create the saved welcome card on first use.
+        if (welcomeCard is null)
+        {
+            welcomeCard = new CardDocument
+            {
+                Id = WelcomeCardId,
+                FrontText =
+                    """
+                    Welcome to your canvas!
+
+                    Double-click empty space to create a card.
+                    Drag empty space to pan the canvas.
+                    Middle-mouse drag also pans.
+                    Drag a card's border to move it.
+                    Click text on a selected card to edit.
+                    Click empty space to deselect.
+                    Press Space to center the selected or last selected card
+                    and reset zoom.
+
+                    Use the buttons above a selected card to switch sides
+                    or delete it.
+                    Use Save project to save your changes.
+                    """,
+                Back = new CardBackDocument(),
+                SavedAtUtc = DateTimeOffset.UtcNow
+            };
+
+            await _cardStorage.StoreSavedCardAsync(
+                welcomeCard, cancellationToken);
+        }
+
+        var geometry = new CardGeometry
+        {
+            X = 100,
+            Y = 100,
+            Width = 560,
+            Height = 280
+        };
+
+        // Create this project's independent working copy.
+        var workingCopy = new CardDocument
+        {
+            Id = welcomeCard.Id,
+            FrontText = welcomeCard.FrontText,
+            Back = new CardBackDocument
+            {
+                TagIds = welcomeCard.Back.TagIds.ToList()
+            },
+            SavedAtUtc = welcomeCard.SavedAtUtc
+        };
+
+        var project = new ProjectDocument
+        {
+            Id = Guid.NewGuid(),
+            Cards =
+            {
+                new CardInstance
+                {
+                    CardId = welcomeCard.Id,
+                    Geometry = geometry
+                }
+            }
+        };
+
+        await _cardStorage.StoreUnsavedCardAsync(
+            project.Id, workingCopy, cancellationToken);
+
+        await _projectStorage.StoreProjectAsync(
+            project, cancellationToken);
+
+        return new ProjectDto
+        {
+            Id = project.Id,
+            SavedAtUtc = project.SavedAtUtc,
+            Cards =
+            {
+                ToDto(workingCopy, geometry)
+            }
+        };
     }
 
     public async Task<ProjectDto?> LoadProjectAsync(
@@ -131,6 +220,29 @@ public sealed class StorageOrchestrator
         card.SavedAtUtc = document.SavedAtUtc;
 
         return card;
+    }
+
+    public async Task<ProjectDto> SaveProjectAsync(
+        ProjectDto project,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+
+        if (project.Id == Guid.Empty)
+            throw new ArgumentException("Project ID cannot be empty.");
+
+        EnsureUniqueCardIds(project.Cards);
+
+        // Save every card's working and saved copies.
+        foreach (var card in project.Cards)
+        {
+            await SaveCardAsync(
+                project.Id, card, cancellationToken);
+        }
+
+        // Save the project manifest and its card positions.
+        return await AutosaveProjectLayoutAsync(
+            project, cancellationToken);
     }
 
     // Autosave project layout separately from card content.
