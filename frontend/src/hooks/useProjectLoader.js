@@ -39,6 +39,32 @@ export default function useProjectLoader(replaceCards) {
         }
     }, [replaceCards]);
 
+        const loadProject = useCallback(async (id) => {
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch(`/api/projects/${id}`);
+
+            if (!response.ok) {
+                throw new Error(`Loading project failed: ${response.status}`);
+            }
+
+            const project = await response.json();
+
+            localStorage.setItem(PROJECT_ID_KEY, project.id);
+            setProjectId(project.id);
+            replaceCards(project.cards ?? []);
+
+            return true;
+        } catch (err) {
+            setError(err.message);
+            return false;
+        } finally {
+            setIsLoading(false);
+        }
+    }, [replaceCards]);
+
     useEffect(() => {
         if (started.current) return;
         started.current = true;
@@ -81,5 +107,6 @@ export default function useProjectLoader(replaceCards) {
         isCreatingProject,
         error,
         createProject,
+        loadProject,
     };
 }

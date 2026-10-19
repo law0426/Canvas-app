@@ -105,6 +105,12 @@ public sealed class StorageOrchestrator
         };
     }
 
+    public Task<IReadOnlyList<ProjectDocument>> ListProjectsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return _projectStorage.ListProjectsAsync(cancellationToken);
+    }
+
     public async Task<ProjectDto?> LoadProjectAsync(
         Guid projectId,
         CancellationToken cancellationToken = default)

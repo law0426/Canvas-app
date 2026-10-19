@@ -16,6 +16,7 @@ import WorldLayer from "./components/WorldLayer";
 import useProjectLoader from "./hooks/useProjectLoader";
 import ProjectSaveButton from "./components/ProjectSaveButton";
 import NewProjectButton from "./components/NewProjectButton";
+import ProjectSelector from "./components/ProjectSelector";
 
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
     error,
     createProject,
     isCreatingProject,
+    loadProject,
   } = useProjectLoader(replaceCards);
 
   const {
@@ -115,6 +117,16 @@ export default function App() {
           ))}
         </WorldLayer>
       </Canvas>
+
+      <ProjectSelector
+        loadProject={loadProject}
+        isLoading={isLoading}
+      />
+
+      <NewProjectButton
+        createProject={createProject}
+        isCreatingProject={isCreatingProject}
+      />
       
       <NewProjectButton
         createProject={createProject}

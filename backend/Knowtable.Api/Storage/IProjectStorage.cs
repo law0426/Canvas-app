@@ -11,4 +11,6 @@ public interface IProjectStorage
     Task StoreProjectAsync(
         ProjectDocument project,
         CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ProjectDocument>> ListProjectsAsync(
+        CancellationToken cancellationToken = default);
 }

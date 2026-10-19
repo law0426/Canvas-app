@@ -14,6 +14,33 @@ public sealed class FileProjectStorage : IProjectStorage
             "Projects");
     }
 
+    public async Task<IReadOnlyList<ProjectDocument>> ListProjectsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        if (!Directory.Exists(_projectsRoot))
+            return Array.Empty<ProjectDocument>();
+
+        var projects = new List<ProjectDocument>();
+
+        foreach (var directory in Directory.EnumerateDirectories(_projectsRoot))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var path = Path.Combine(directory, "project.json");
+
+            var project = await FileStorageHelpers.ReadJsonAsync<ProjectDocument>(
+                path,
+                cancellationToken);
+
+            if (project is not null)
+                projects.Add(project);
+        }
+
+        return projects
+            .OrderByDescending(project => project.SavedAtUtc)
+            .ToList();
+    }
+
     public async Task<ProjectDocument?> LoadProjectAsync(
         Guid projectId,
         CancellationToken cancellationToken = default)

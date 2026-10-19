@@ -18,6 +18,14 @@ public sealed class ProjectsController : ControllerBase
         _storage = storage;
     }
 
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<ProjectDocument>>> ListProjects(
+        CancellationToken cancellationToken)
+    {
+        var projects = await _storage.ListProjectsAsync(cancellationToken);
+        return Ok(projects);
+    }
+
     [HttpPost]
     public async Task<ActionResult<ProjectDto>> CreateProject(
         CancellationToken cancellationToken)
