@@ -18,7 +18,16 @@ export default function useProjectLoader(replaceCards) {
             throw new Error(`Loading draft failed: ${response.status}`);
         }
 
-        return response.json();
+        const draft = await response.json();
+
+        return {
+            ...draft,
+            cards: (draft.cards ?? []).map((card) => ({
+                ...card,
+                x: window.innerWidth / 2,
+                y: window.innerHeight / 2,
+            })),
+        };
     }, []);
 
     const startNewProject = useCallback(async () => {

@@ -133,6 +133,7 @@ export default function App() {
       <NewProjectButton
         startNewProject={startNewProject}
         isStartingNewProject={isStartingNewProject}
+        resetCamera={resetCamera}
       />
 
       <ProjectSaveButton

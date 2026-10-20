@@ -1,11 +1,17 @@
 export default function NewProjectButton({
     startNewProject,
     isStartingNewProject,
+    resetCamera,
 }) {
+    async function handleClick() {
+        const success = await startNewProject();
+
+        if (success) resetCamera();
+    }
     return (
         <button
             type="button"
-            onClick={startNewProject}
+            onClick={handleClick}
             disabled={isStartingNewProject}
             style={{
                 position: "fixed",
