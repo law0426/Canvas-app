@@ -1,33 +1,39 @@
+
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+
 export default function CardFace({
   card,
   updateText,
   beginTextManipulation,
   endTextManipulation,
 }) {
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: card.text || "",
+    onUpdate: ({ editor }) => {
+      updateText(card.id, editor.getHTML());
+    },
+    onFocus: beginTextManipulation,
+    onBlur: endTextManipulation,
+  });
+
   return (
-    <textarea
-      id={`card-text-${card.id}`}
-      name={`card-text-${card.id}`}
-      value={card.text}
-      onChange={(e) =>
-        updateText(card.id, e.target.value)
-      }
-      onFocus={beginTextManipulation}
-      onBlur={endTextManipulation}
-      placeholder="Write something..."
+    <div
       style={{
-        pointerEvents: "auto",
         width: "100%",
         height: "100%",
-        resize: "none",
-        border: "none",
-        outline: "none",
+        boxSizing: "border-box",
+        padding: "10px",
+        overflowY: "auto",
         background: "transparent",
         color: "black",
-        fontSize: "16px",
-        padding: "10px",
-        boxSizing: "border-box",
       }}
-    />
+    >
+      <EditorContent
+        editor={editor}
+        style={{ height: "100%" }}
+      />
+    </div>
   );
 }

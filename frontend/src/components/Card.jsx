@@ -11,6 +11,7 @@ import CardBack from "./CardBack";
 import CardOptions from "./CardOptions";
 
 
+
 export default function Card({
   card,
   activeCardId,
@@ -189,6 +190,7 @@ export default function Card({
             beginTextManipulation={beginTextManipulation}
             endTextManipulation={endTextManipulation}
           />
+          
         )}
         {activeCardId === card.id &&
           [

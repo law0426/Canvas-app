@@ -79,15 +79,11 @@ export default function Canvas({
       
       onWheel={(e) => {
         const target = e.target;
-        const textarea =
-          target instanceof Element
-            ? target.closest("textarea")
-            : null;
 
-        // Let scrollable textareas handle their own scrolling.
+        // Never zoom when the pointer is over a rich-text editor.
         if (
-          textarea &&
-          textarea.scrollHeight > textarea.clientHeight
+          target instanceof Element &&
+          target.closest('[contenteditable="true"]')
         ) {
           return;
         }
