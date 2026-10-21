@@ -1,10 +1,12 @@
+using System.Text.Json;
+
 namespace Knowtable.Api.Models;
 
 public sealed class CardDocument
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    public string FrontText { get; set; } = string.Empty;
+    public JsonElement? FrontContent { get; set; }
 
     public CardBackDocument Back { get; set; } = new();
 

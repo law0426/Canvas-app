@@ -16,24 +16,27 @@ export default function useCards() {
         setIsDirty(false);
     }, []);
 
-    function addCard(x, y) {
+        function addCard(x, y) {
         setIsDirty(true);
         const newCardId = crypto.randomUUID();
-        setCards(prev => [
-            ...prev,
-            {
-                id: newCardId,
-                x,
-                y,
-                text: "New card",
-                tagIds: [
-                    "philosophy",
-                    "ai",
-                    "science",
-                    "art",
-                ]
-            }
-        ]);
+
+        const newCard = {
+            id: newCardId,
+            x,
+            y,
+            frontContent: {
+                type: "doc",
+                content: [{
+                    type: "paragraph",
+                    content: [{ type: "text", text: "New card" }]
+                }]
+            },
+            tagIds: ["philosophy", "ai", "science", "art"]
+        };
+
+        console.log("Created card:", newCard);
+
+        setCards(prev => [...prev, newCard]);
         return newCardId;
     }
 
@@ -60,12 +63,12 @@ export default function useCards() {
         );
     }, []);
 
-    function updateText(id, text) {
+        function updateText(id, frontContent) {
         setIsDirty(true);
         setCards(prev =>
             prev.map(card =>
                 card.id === id
-                    ? { ...card, text }
+                    ? { ...card, frontContent }
                     : card
             )
         );

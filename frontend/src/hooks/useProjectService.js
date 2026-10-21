@@ -28,7 +28,10 @@ export default function useProjectService({
                     id: projectId ?? "00000000-0000-0000-0000-000000000000",
                     cards: cards.map(card => ({
                         id: card.id,
-                        text: card.text ?? "",
+                        frontContent: card.frontContent ?? {
+                            type: "doc",
+                            content: [{ type: "paragraph" }],
+                        },
                         tagIds: card.tagIds ?? [],
                         x: card.x,
                         y: card.y,

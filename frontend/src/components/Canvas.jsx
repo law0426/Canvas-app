@@ -83,7 +83,7 @@ export default function Canvas({
         // Never zoom when the pointer is over a rich-text editor.
         if (
           target instanceof Element &&
-          target.closest('[contenteditable="true"]')
+          target.closest('[data-no-canvas-zoom="true"]')
         ) {
           return;
         }

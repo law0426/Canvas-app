@@ -1,5 +1,9 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
 using Knowtable.Api.Models;
 using Knowtable.Api.Storage;
+
 
 namespace Knowtable.Api.Services;
 
@@ -46,7 +50,7 @@ public sealed class StorageOrchestrator
         var workingCopy = new CardDocument
         {
             Id = welcomeCard.Id,
-            FrontText = welcomeCard.FrontText,
+            FrontContent = CloneContent(welcomeCard.FrontContent),
             Back = new CardBackDocument
             {
                 TagIds = welcomeCard.Back.TagIds.ToList()
@@ -156,7 +160,7 @@ public sealed class StorageOrchestrator
         var card = new CardDocument
         {
             Id = Guid.NewGuid(),
-            FrontText = "New card",
+            FrontContent = CreateTextDocument("New card"),
             Back = new CardBackDocument(),
             SavedAtUtc = timestamp
         };
@@ -326,7 +330,7 @@ public sealed class StorageOrchestrator
         var revertedCard = new CardDocument
         {
             Id = savedCard.Id,
-            FrontText = savedCard.FrontText,
+            FrontContent = CloneContent(savedCard.FrontContent),
             Back = new CardBackDocument
             {
                 TagIds = savedCard.Back.TagIds.ToList()
@@ -357,7 +361,7 @@ public sealed class StorageOrchestrator
         return new CardDocument
         {
             Id = card.Id,
-            FrontText = card.Text,
+            FrontContent = CloneContent(card.FrontContent),
             Back = new CardBackDocument
             {
                 TagIds = card.TagIds.ToList()
@@ -373,7 +377,7 @@ public sealed class StorageOrchestrator
         return new CardDto
         {
             Id = card.Id,
-            Text = card.FrontText,
+            FrontContent = CloneContent(card.FrontContent),
             TagIds = card.Back.TagIds.ToList(),
             X = geometry.X,
             Y = geometry.Y,
@@ -403,38 +407,95 @@ public sealed class StorageOrchestrator
         }
     }
 
+    private static JsonElement? CloneContent(JsonElement? content)
+    {
+        if (content is null ||
+            content.Value.ValueKind == JsonValueKind.Undefined)
+        {
+            return null;
+        }
+
+        return content.Value.Clone();
+    }
+
+    private static JsonElement CreateTextDocument(string text)
+    {
+        var paragraphs = new JsonArray();
+
+        foreach (var line in text.Replace("\r\n", "\n").Split('\n'))
+        {
+            var paragraph = new JsonObject
+            {
+                ["type"] = "paragraph"
+            };
+
+            if (line.Length > 0)
+            {
+                paragraph["content"] = new JsonArray(
+                    new JsonObject
+                    {
+                        ["type"] = "text",
+                        ["text"] = line
+                    });
+            }
+
+            paragraphs.Add(paragraph);
+        }
+
+        return JsonSerializer.SerializeToElement(new JsonObject
+        {
+            ["type"] = "doc",
+            ["content"] = paragraphs
+        });
+    }
+
+    private static async Task<JsonElement> LoadWelcomeCardContentAsync(
+        CancellationToken cancellationToken)
+    {
+        var path = Path.Combine(
+            AppContext.BaseDirectory,
+            "Templates",
+            "welcome-card.json");
+
+        await using var stream = File.OpenRead(path);
+
+        using var document = await JsonDocument.ParseAsync(
+            stream,
+            cancellationToken: cancellationToken);
+
+        if (document.RootElement.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidDataException(
+                "The welcome-card template must contain a JSON object.");
+        }
+
+        return document.RootElement.Clone();
+    }
+    
     private async Task<CardDocument> GetOrCreateWelcomeCardAsync(
         CancellationToken cancellationToken)
     {
         var card = await _cardStorage.LoadSavedCardAsync(
             WelcomeCardId, cancellationToken);
 
-        if (card is not null)
+        // Return the card if it already has valid document content.
+        if (card?.FrontContent is JsonElement content &&
+            content.ValueKind == JsonValueKind.Object)
+        {
             return card;
+        }
 
-        card = new CardDocument
+        // Create or repair the welcome card using its template.
+        card ??= new CardDocument
         {
             Id = WelcomeCardId,
-            FrontText =
-                """
-                Welcome to your canvas!
-
-                Double-click empty space to create a card.
-                Drag empty space to pan the canvas.
-                Middle-mouse drag also pans.
-                Drag a card's border to move it.
-                Click text on a selected card to edit.
-                Click empty space to deselect.
-                Press Space to center the selected or last selected card
-                and reset zoom.
-
-                Use the buttons above a selected card to switch sides
-                or delete it.
-                Use Save project to save your changes.
-                """,
-            Back = new CardBackDocument(),
-            SavedAtUtc = DateTimeOffset.UtcNow
+            Back = new CardBackDocument()
         };
+
+        card.FrontContent = await LoadWelcomeCardContentAsync(
+            cancellationToken);
+
+        card.SavedAtUtc = DateTimeOffset.UtcNow;
 
         await _cardStorage.StoreSavedCardAsync(
             card, cancellationToken);

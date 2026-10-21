@@ -1,10 +1,12 @@
+using System.Text.Json;
+
 namespace Knowtable.Api.Models;
 
 public sealed class CardDto
 {
     public Guid Id { get; set; }
 
-    public string Text { get; set; } = string.Empty;
+    public JsonElement? FrontContent { get; set; }
 
     public List<string> TagIds { get; set; } = new();
 

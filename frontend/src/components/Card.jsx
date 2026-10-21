@@ -186,6 +186,7 @@ export default function Card({
         ) : (
           <CardFace
             card={card}
+            isActive={activeCardId === card.id}
             updateText={updateText}
             beginTextManipulation={beginTextManipulation}
             endTextManipulation={endTextManipulation}
