@@ -52,6 +52,7 @@ export default function App() {
     beginTextManipulation, 
     endTextManipulation,    
     handleCardDeleted,
+    registerCardEditor,
   } = useAppState();
 
   const { deleteCard } = useCardService({
@@ -109,6 +110,7 @@ export default function App() {
               updateText={updateText}
               setActiveCardId={selectCard}
               activeCardId={activeCardId}
+              registerCardEditor={registerCardEditor}
               setIsDragging={setIsDragging}
               offset={offset}
               eventToWorld={eventToWorld}

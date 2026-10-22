@@ -10,6 +10,7 @@ const EMPTY_DOCUMENT = {
 export default function CardFace({
     card,
     isActive,
+    registerCardEditor,
     updateText,
     beginTextManipulation,
     endTextManipulation,
@@ -27,6 +28,16 @@ export default function CardFace({
         onFocus: beginTextManipulation,
         onBlur: endTextManipulation,
     });
+
+    useEffect(() => {
+        if (!editor) return;
+
+        registerCardEditor(card.id, editor);
+
+        return () => {
+            registerCardEditor(card.id, null);
+        };
+    }, [card.id, editor, registerCardEditor]);
 
     useEffect(() => {
         if (!isActive && editor?.isFocused) {

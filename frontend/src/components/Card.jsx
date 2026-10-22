@@ -25,10 +25,12 @@ export default function Card({
   beginTextManipulation,
   endTextManipulation,
   updateGeometry,
-  removeCard
+  removeCard,
+  registerCardEditor,
 }) {
   const [flipped, setFlipped] = useState(false);
   const [resizeState, setResizeState] = useState(null);
+  
   const handleSizes = activeCardId === card.id
     ? (
         resizeState?.handleSizes ??
@@ -42,16 +44,18 @@ export default function Card({
   function handleMouseDown(e) {
     if (e.button !== 0) return;
 
-    // Selected textarea: allow normal text interaction.
-    if (
-      activeCardId === card.id &&
-      e.target.tagName === "TEXTAREA"
-    ) {
+    const editorTarget =
+      e.target instanceof Element &&
+      e.target.closest('[contenteditable="true"]');
+
+    // Selected editor: allow normal text interaction.
+    if (activeCardId === card.id && editorTarget) {
+      e.stopPropagation();
       return;
     }
 
-    // Unselected textarea: select and drag the card, not its text.
-    if (e.target.tagName === "TEXTAREA") {
+    // Unselected editor: select and drag the card first.
+    if (editorTarget) {
       e.preventDefault();
     } else {
       // Clicking elsewhere exits text manipulation.
@@ -187,6 +191,7 @@ export default function Card({
           <CardFace
             card={card}
             isActive={activeCardId === card.id}
+            registerCardEditor={registerCardEditor} 
             updateText={updateText}
             beginTextManipulation={beginTextManipulation}
             endTextManipulation={endTextManipulation}
